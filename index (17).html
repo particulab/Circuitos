@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>¿Cuál brilla más? · EulerGames</title>
+<style>
+:root{
+  --bg:#0d1420;
+  --panel:#141f2f;
+  --panel2:#1a293d;
+  --ink:#eef5ff;
+  --muted:#9fb0c7;
+  --line:#34506f;
+  --accent:#73b7ff;
+  --accent2:#ffd86a;
+  --good:#42d392;
+  --bad:#ff7272;
+  --shadow:0 16px 45px rgba(0,0,0,.28);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at top,#17283e 0,#0d1420 46%,#090e16 100%);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit}
+body{padding:24px}
+.app{max-width:1280px;margin:0 auto}
+header{display:flex;gap:20px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+.brand h1{margin:0;font-size:clamp(28px,4vw,46px);line-height:1.02;letter-spacing:-.03em}
+.brand p{margin:8px 0 0;color:var(--muted);max-width:700px}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #2e4e70;background:#112034;border-radius:999px;color:#bfdcff;font-size:13px;font-weight:700;margin-bottom:10px}
+.controls-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.select-wrap{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;background:#101b2a;border:1px solid #28425e;border-radius:12px;padding:8px 10px}
+select{border:0;color:var(--ink);background:#19283a;padding:6px 8px;border-radius:8px;outline:none}
+button{border:0;border-radius:12px;padding:11px 15px;cursor:pointer;font-weight:800;transition:.16s transform,.16s opacity,.16s background}
+button:hover:not(:disabled){transform:translateY(-1px)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btn-secondary{background:#22364e;color:#dfeeff;border:1px solid #34506f}
+.btn-primary{background:linear-gradient(180deg,#8dc8ff,#5ca8f4);color:#08111c;box-shadow:0 8px 22px rgba(91,168,244,.22)}
+.btn-measure{background:#f7d66c;color:#28200a}
+.grid{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(340px,.78fr);gap:18px}
+.card{background:linear-gradient(180deg,rgba(24,39,59,.96),rgba(17,28,43,.96));border:1px solid #263f5b;border-radius:var(--radius);box-shadow:var(--shadow)}
+.sim-card{padding:14px;min-height:620px;display:flex;flex-direction:column}
+.statusbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:2px 4px 10px;flex-wrap:wrap}
+.status-left{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:7px 10px;border-radius:999px;background:#0f1b2a;border:1px solid #2a455f;color:#bfd0e5;font-size:13px;font-weight:700}
+.event{padding:11px 13px;border-radius:12px;background:#101b2a;border:1px solid #294864;color:#d9e7f7;font-size:14px;line-height:1.35;max-width:520px}
+.canvas-wrap{position:relative;flex:1;min-height:500px;border-radius:15px;overflow:hidden;background:linear-gradient(180deg,#111c2a,#0b131e);border:1px solid #263c55}
+canvas{display:block;width:100%;height:100%;min-height:500px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin:10px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:#6b7e93;border:1px solid #9ab0c7}
+.dot.on{background:#ffd978;box-shadow:0 0 12px rgba(255,217,120,.8)}
+.side{display:flex;flex-direction:column;gap:18px}
+.pred-card,.feedback-card{padding:18px}
+.pred-card h2,.feedback-card h2{margin:0 0 6px;font-size:19px}
+.sub{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.45}
+.bulb-list{display:flex;flex-direction:column;gap:10px}
+.bulb-row{background:#101b2a;border:1px solid #2a425e;border-radius:13px;padding:10px;display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center}
+.bulb-row.correct{border-color:rgba(66,211,146,.78);box-shadow:inset 0 0 0 1px rgba(66,211,146,.2)}
+.bulb-row.wrong{border-color:rgba(255,114,114,.8);box-shadow:inset 0 0 0 1px rgba(255,114,114,.15)}
+.bulb-letter{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#1e3148;border:1px solid #385875;font-size:19px;font-weight:900;color:#f4f9ff}
+.segmented{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.choice{padding:8px 6px;border-radius:9px;background:#1a2b40;color:#aebed1;border:1px solid #2e4965;font-size:11px;font-weight:800;line-height:1.08;min-height:43px}
+.choice.selected{background:#355b82;color:#fff;border-color:#78b9f4}
+.choice:disabled{opacity:.8}
+.actions{display:flex;gap:9px;margin-top:14px}
+.actions button{flex:1}
+.feedback-card{display:none}
+.feedback-card.show{display:block}
+.scoreline{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:4px 0 12px}
+.score{font-size:38px;font-weight:950;letter-spacing:-.04em}
+.score small{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:0}
+.message{color:#dcecff;font-size:14px;line-height:1.45;margin:0 0 12px}
+.measurements{display:none;margin-top:12px;padding-top:12px;border-top:1px solid #2a425e}
+.measurements.show{display:block}
+.measure-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.measure{padding:9px 10px;border-radius:10px;background:#101b2a;border:1px solid #293f58;font-size:13px;color:#c9d9eb}
+.measure strong{color:#fff}
+.note{margin-top:12px;color:#88a0b9;font-size:12px;line-height:1.45}
+.tip{padding:12px 13px;border-radius:12px;background:#0e1927;border:1px dashed #34506f;color:#aebed1;font-size:13px;line-height:1.45}
+@media(max-width:930px){
+  body{padding:14px}
+  header{align-items:flex-start;flex-direction:column}
+  .controls-top{justify-content:flex-start}
+  .grid{grid-template-columns:1fr}
+  .sim-card{min-height:540px}
+  .canvas-wrap,canvas{min-height:440px}
+}
+@media(max-width:560px){
+  .segmented{grid-template-columns:repeat(2,1fr)}
+  .actions{flex-direction:column}
+  .measure-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="badge">EulerGames · Circuitos</div>
+      <h1>¿Cuál brilla más?</h1>
+      <p>Predice el brillo de cada foco antes de energizar el circuito. Todos los focos son idénticos y la batería es ideal.</p>
+    </div>
+    <div class="controls-top">
+      <label class="select-wrap">Dificultad
+        <select id="difficulty" aria-label="Dificultad">
+          <option value="1">1 · Básica</option>
+          <option value="2">2 · Ramas</option>
+          <option value="3" selected>3 · Puentes</option>
+          <option value="4">4 · Foco retirado</option>
+          <option value="5">5 · Fallas y puentes</option>
+        </select>
+      </label>
+      <button id="newRoundTop" class="btn-secondary">Nueva ronda</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card sim-card">
+      <div class="statusbar">
+        <div class="status-left">
+          <span class="pill" id="roundPill">Ronda 1</span>
+          <span class="pill">R = 1 Ω</span>
+          <span class="pill">Batería = 6 V</span>
+        </div>
+        <div class="event" id="eventText">Todos los focos están conectados.</div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="circuit" width="900" height="560" aria-label="Circuito eléctrico"></canvas>
+      </div>
+      <div class="legend">
+        <span><i class="dot"></i> Antes de evaluar, los focos no revelan su brillo.</span>
+        <span><i class="dot on"></i> Al energizar, la luminosidad representa la corriente.</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="card pred-card">
+        <h2>Tu predicción</h2>
+        <p class="sub">Clasifica cada foco. No es obligatorio utilizar las cuatro categorías en cada ronda.</p>
+        <div class="bulb-list" id="bulbList"></div>
+        <div class="actions">
+          <button id="energize" class="btn-primary" disabled>⚡ Energizar circuito</button>
+        </div>
+        <div class="note">Las categorías son relativas dentro de la ronda: máximo, intermedio, mínimo no nulo y apagado.</div>
+      </section>
+
+      <section class="card feedback-card" id="feedbackCard">
+        <h2>Resultado</h2>
+        <div class="scoreline">
+          <div class="score" id="score">0/5 <small>correctos</small></div>
+          <button id="showMeasures" class="btn-measure">Mostrar mediciones</button>
+        </div>
+        <p class="message" id="message"></p>
+        <div class="measurements" id="measurements">
+          <div class="measure-grid" id="measureGrid"></div>
+          <div class="note">La simulación usa focos ideales de 1 Ω y define el brillo como proporcional a la magnitud de la corriente, tal como en el problema original.</div>
+        </div>
+        <div class="actions">
+          <button id="nextRound" class="btn-secondary">Siguiente ronda</button>
+        </div>
+      </section>
+
+      <div class="tip">Pista: no te guíes sólo por la cercanía a la batería. Sigue las conexiones, identifica las ramas y compara cómo puede repartirse la corriente.</div>
+    </aside>
+  </main>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const V_BAT = 6;
+  const R_BULB = 1;
+  const LABELS = ['A','B','C','D','E'];
+  const CATEGORIES = [
+    {id:'max', label:'Más brillante'},
+    {id:'mid', label:'Brillante'},
+    {id:'min', label:'Menos brillante'},
+    {id:'off', label:'Apagado'}
+  ];
+
+  const canvas = document.getElementById('circuit');
+  const ctx = canvas.getContext('2d');
+  const difficultyEl = document.getElementById('difficulty');
+  const bulbList = document.getElementById('bulbList');
+  const energizeBtn = document.getElementById('energize');
+  const feedbackCard = document.getElementById('feedbackCard');
+  const scoreEl = document.getElementById('score');
+  const messageEl = document.getElementById('message');
+  const eventText = document.getElementById('eventText');
+  const roundPill = document.getElementById('roundPill');
+  const showMeasuresBtn = document.getElementById('showMeasures');
+  const measurements = document.getElementById('measurements');
+  const measureGrid = document.getElementById('measureGrid');
+
+  let round = 0;
+  let state = null;
+  let animation = 0;
+  let animFrame = null;
+
+  // Cada topología contiene exactamente cinco focos. Las coordenadas sólo
+  // controlan el dibujo; la física se resuelve a partir de los nodos.
+  const templates = [
+    {
+      name:'Dos ramas de dos focos y una rama directa', minLevel:1,
+      nodes:{P:[110,280],N:[790,280],a:[450,145],b:[450,415]},
+      edges:[
+        ['P','N',-150], ['P','a',0], ['a','N',0], ['P','b',0], ['b','N',0]
+      ]
+    },
+    {
+      name:'Una rama directa y cuatro focos en serie', minLevel:1,
+      nodes:{P:[110,280],N:[790,280],a:[285,405],b:[450,405],c:[615,405]},
+      edges:[
+        ['P','N',-145], ['P','a',0], ['a','b',0], ['b','c',0], ['c','N',0]
+      ]
+    },
+    {
+      name:'Dos caminos de distinta longitud', minLevel:1,
+      nodes:{P:[110,280],N:[790,280],a:[450,135],b:[300,420],c:[580,420]},
+      edges:[
+        ['P','a',0], ['a','N',0], ['P','b',0], ['b','c',0], ['c','N',0]
+      ]
+    },
+    {
+      name:'Dos ramas después de un foco común', minLevel:2,
+      nodes:{P:[110,280],N:[790,280],a:[300,280],b:[525,145],c:[525,415]},
+      edges:[
+        ['P','a',0], ['a','b',0], ['b','N',0], ['a','c',0], ['c','N',0]
+      ]
+    },
+    {
+      name:'Puente balanceado', minLevel:3,
+      nodes:{P:[110,280],N:[790,280],a:[420,135],b:[420,425]},
+      edges:[
+        ['P','a',0], ['a','N',0], ['P','b',0], ['b','N',0], ['a','b',0]
+      ]
+    },
+    {
+      name:'Red con derivación', minLevel:3,
+      nodes:{P:[110,280],N:[790,280],a:[330,145],b:[585,385]},
+      edges:[
+        ['P','a',0], ['a','b',0], ['b','N',0], ['a','N',55], ['P','b',-55]
+      ]
+    }
+  ];
+
+  class UnionFind {
+    constructor(items){ this.p = new Map(items.map(x => [x,x])); }
+    find(x){
+      let p = this.p.get(x);
+      if (p !== x) { p = this.find(p); this.p.set(x,p); }
+      return p;
+    }
+    union(a,b){
+      a=this.find(a); b=this.find(b);
+      if(a!==b) this.p.set(b,a);
+    }
+  }
+
+  function shuffle(arr){
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function gaussianSolve(A,b){
+    const n=A.length;
+    if(!n) return [];
+    const M=A.map((row,i)=>row.slice().concat(b[i]));
+    for(let col=0;col<n;col++){
+      let pivot=col;
+      for(let r=col+1;r<n;r++) if(Math.abs(M[r][col])>Math.abs(M[pivot][col])) pivot=r;
+      if(Math.abs(M[pivot][col])<1e-10) return null;
+      [M[col],M[pivot]]=[M[pivot],M[col]];
+      const d=M[col][col];
+      for(let j=col;j<=n;j++) M[col][j]/=d;
+      for(let r=0;r<n;r++){
+        if(r===col) continue;
+        const f=M[r][col];
+        if(Math.abs(f)<1e-14) continue;
+        for(let j=col;j<=n;j++) M[r][j]-=f*M[col][j];
+      }
+    }
+    return M.map(row=>row[n]);
+  }
+
+  function solveCircuit(candidate){
+    const nodeNames = Object.keys(candidate.nodes);
+    const uf = new UnionFind(nodeNames);
+
+    // Un alambre entre terminales equivale a identificar ambos nodos.
+    for(const e of candidate.bulbs){
+      if(e.bypassed) uf.union(e.a,e.b);
+    }
+
+    const P = uf.find('P');
+    const N = uf.find('N');
+    if(P===N) return null; // cortocircuito ideal de la batería: ronda inválida.
+
+    const active = candidate.bulbs.filter(e=>!e.removed);
+    const reducedEdges = active.map(e=>({
+      ...e, ra:uf.find(e.a), rb:uf.find(e.b)
+    }));
+
+    const reducedNodes = new Set([P,N]);
+    reducedEdges.forEach(e=>{reducedNodes.add(e.ra);reducedNodes.add(e.rb)});
+
+    // Se identifican nodos conectados eléctricamente a al menos un terminal fijo.
+    const adj = new Map([...reducedNodes].map(n=>[n,[]]));
+    reducedEdges.forEach(e=>{
+      if(e.ra===e.rb) return;
+      adj.get(e.ra).push(e.rb); adj.get(e.rb).push(e.ra);
+    });
+    const reached = new Set([P,N]);
+    const q=[P,N];
+    while(q.length){
+      const u=q.shift();
+      for(const v of (adj.get(u)||[])) if(!reached.has(v)){ reached.add(v); q.push(v); }
+    }
+
+    const unknown = [...reducedNodes].filter(n=>n!==P && n!==N && reached.has(n));
+    const idx = new Map(unknown.map((n,i)=>[n,i]));
+    const G=Array.from({length:unknown.length},()=>Array(unknown.length).fill(0));
+    const z=Array(unknown.length).fill(0);
+    const fixed = new Map([[P,V_BAT],[N,0]]);
+
+    for(const e of reducedEdges){
+      if(e.ra===e.rb) continue;
+      const g=1/R_BULB;
+      for(const [u,v] of [[e.ra,e.rb],[e.rb,e.ra]]){
+        if(idx.has(u)){
+          const i=idx.get(u); G[i][i]+=g;
+          if(idx.has(v)) G[i][idx.get(v)]-=g;
+          else if(fixed.has(v)) z[i]+=g*fixed.get(v);
+        }
+      }
+    }
+
+    const x=gaussianSolve(G,z);
+    if(x===null) return null;
+    const volts = new Map([[P,V_BAT],[N,0]]);
+    unknown.forEach((n,i)=>volts.set(n,x[i]));
+    // Nodos flotantes: el potencial absoluto es arbitrario; se fija a 0.
+    [...reducedNodes].forEach(n=>{ if(!volts.has(n)) volts.set(n,0); });
+
+    const currents = candidate.bulbs.map(e=>{
+      if(e.removed) return 0;
+      const ra=uf.find(e.a), rb=uf.find(e.b);
+      if(ra===rb) return 0;
+      return Math.abs((volts.get(ra)-volts.get(rb))/R_BULB);
+    });
+
+    return {currents, volts, uf};
+  }
+
+  function clusterValues(values){
+    const positive=values.filter(v=>v>1e-7).sort((a,b)=>b-a);
+    const groups=[];
+    for(const v of positive){
+      if(!groups.some(g=>Math.abs(g-v)<1e-6)) groups.push(v);
+    }
+    return groups;
+  }
+
+  function classifyCurrents(currents){
+    const levels=clusterValues(currents);
+    return currents.map(v=>{
+      if(v<=1e-7) return 'off';
+      const k=levels.findIndex(x=>Math.abs(x-v)<1e-6);
+      if(levels.length===1) return 'max';
+      if(levels.length===2) return k===0 ? 'max' : 'min';
+      if(k===0) return 'max';
+      if(k===levels.length-1) return 'min';
+      return 'mid';
+    });
+  }
+
+  function chooseModification(candidate, level){
+    candidate.event='Todos los focos están conectados.';
+    if(level<4) return;
+
+    const forceModification = true;
+    if(!forceModification) return;
+
+    const ids=candidate.bulbs.map((_,i)=>i);
+    if(level===4 || Math.random()<0.55){
+      const i=ids[Math.floor(Math.random()*ids.length)];
+      candidate.bulbs[i].removed=true;
+      candidate.eventIndex=i;
+      candidate.eventType='removed';
+      return;
+    }
+
+    // Evitamos puentear un foco conectado directamente entre los terminales
+    // de la batería para no crear un cortocircuito ideal de la fuente.
+    const eligible=ids.filter(i=>{
+      const e=candidate.bulbs[i];
+      return !((e.a==='P'&&e.b==='N')||(e.a==='N'&&e.b==='P'));
+    });
+    if(!eligible.length){
+      const i=ids[Math.floor(Math.random()*ids.length)];
+      candidate.bulbs[i].removed=true;
+      candidate.eventIndex=i; candidate.eventType='removed';
+    } else {
+      const i=eligible[Math.floor(Math.random()*eligible.length)];
+      candidate.bulbs[i].bypassed=true;
+      candidate.eventIndex=i; candidate.eventType='bypassed';
+    }
+  }
+
+  function makeCandidate(level){
+    let pool=templates.filter(t=>t.minLevel<=Math.min(level,3));
+    if(level===1) pool=pool.filter(t=>t.minLevel===1);
+    if(level===2) pool=pool.filter(t=>t.minLevel<=2);
+    const t=pool[Math.floor(Math.random()*pool.length)];
+    const labels=shuffle(LABELS);
+    const bulbs=t.edges.map((e,i)=>({
+      id:i,a:e[0],b:e[1],curve:e[2]||0,label:labels[i],removed:false,bypassed:false
+    }));
+    const candidate={name:t.name,nodes:JSON.parse(JSON.stringify(t.nodes)),bulbs,event:'',eventIndex:null,eventType:null};
+    chooseModification(candidate,level);
+    const sol=solveCircuit(candidate);
+    if(!sol) return null;
+    candidate.currents=sol.currents;
+    candidate.correct=classifyCurrents(sol.currents);
+    candidate.maxCurrent=Math.max(...sol.currents,1e-9);
+
+    const groups=clusterValues(sol.currents);
+    const catCount=new Set(candidate.correct).size;
+    // Control de calidad: evitamos rondas con demasiados niveles positivos o
+    // con una única categoría total.
+    if(groups.length>3 || catCount<2) return null;
+    return candidate;
+  }
+
+  function generateRound(){
+    const level=Number(difficultyEl.value);
+    let candidate=null;
+    for(let k=0;k<60 && !candidate;k++) candidate=makeCandidate(level);
+    if(!candidate){
+      // Fallback extremadamente conservador.
+      const old=difficultyEl.value;
+      difficultyEl.value='3';
+      for(let k=0;k<60 && !candidate;k++) candidate=makeCandidate(3);
+      difficultyEl.value=old;
+    }
+    return candidate;
+  }
+
+  function categoryLabel(id){
+    return CATEGORIES.find(c=>c.id===id)?.label || id;
+  }
+
+  function newRound(){
+    round++;
+    state=generateRound();
+    state.predictions={};
+    state.evaluated=false;
+    state.showMeasures=false;
+    animation=0;
+    if(animFrame) cancelAnimationFrame(animFrame);
+    roundPill.textContent=`Ronda ${round}`;
+
+    if(state.eventType==='removed'){
+      const b=state.bulbs[state.eventIndex];
+      state.event=`Se retiró el foco ${b.label} de su base.`;
+    } else if(state.eventType==='bypassed'){
+      const b=state.bulbs[state.eventIndex];
+      state.event=`Se conectó un alambre entre los dos terminales del foco ${b.label}.`;
+    } else {
+      state.event='Todos los focos están conectados normalmente.';
+    }
+    eventText.textContent=state.event;
+    feedbackCard.classList.remove('show');
+    measurements.classList.remove('show');
+    showMeasuresBtn.textContent='Mostrar mediciones';
+    renderPredictionPanel();
+    draw();
+  }
+
+  function renderPredictionPanel(){
+    bulbList.innerHTML='';
+    const ordered=state.bulbs.slice().sort((a,b)=>a.label.localeCompare(b.label));
+    ordered.forEach(b=>{
+      const row=document.createElement('div');
+      row.className='bulb-row';
+      row.dataset.bulbId=b.id;
+      const letter=document.createElement('div');
+      letter.className='bulb-letter';
+      letter.textContent=b.label;
+      const seg=document.createElement('div');
+      seg.className='segmented';
+      CATEGORIES.forEach(cat=>{
+        const btn=document.createElement('button');
+        btn.className='choice';
+        btn.type='button';
+        btn.textContent=cat.label;
+        btn.disabled=state.evaluated;
+        if(state.predictions[b.id]===cat.id) btn.classList.add('selected');
+        btn.addEventListener('click',()=>{
+          if(state.evaluated) return;
+          state.predictions[b.id]=cat.id;
+          renderPredictionPanel();
+          updateEnergizeState();
+        });
+        seg.appendChild(btn);
+      });
+      row.append(letter,seg);
+
+      if(state.evaluated){
+        const ok=state.predictions[b.id]===state.correct[b.id];
+        row.classList.add(ok?'correct':'wrong');
+        if(!ok){
+          const explain=document.createElement('div');
+          explain.style.gridColumn='2';
+          explain.style.color='#ffb7b7';
+          explain.style.fontSize='12px';
+          explain.style.marginTop='2px';
+          explain.textContent=`Correcto: ${categoryLabel(state.correct[b.id])}`;
+          row.appendChild(explain);
+        }
+      }
+      bulbList.appendChild(row);
+    });
+    updateEnergizeState();
+  }
+
+  function updateEnergizeState(){
+    energizeBtn.disabled=state.evaluated || Object.keys(state.predictions).length!==state.bulbs.length;
+  }
+
+  function evaluate(){
+    if(state.evaluated || Object.keys(state.predictions).length!==state.bulbs.length) return;
+    state.evaluated=true;
+    const hits=state.bulbs.reduce((s,b)=>s+(state.predictions[b.id]===state.correct[b.id]?1:0),0);
+    scoreEl.innerHTML=`${hits}/${state.bulbs.length} <small>correctos</small>`;
+    if(hits===5) messageEl.textContent='Predicción completa. Observa ahora cómo se distribuye la corriente por el circuito.';
+    else if(hits>=3) messageEl.textContent='Buena lectura del circuito. Compara los focos que fallaron con los nodos y ramas que comparten.';
+    else messageEl.textContent='La simulación ya revela el comportamiento real. Busca primero qué focos comparten corriente y cuáles quedan entre nodos equipotenciales.';
+    feedbackCard.classList.add('show');
+    renderPredictionPanel();
+    renderMeasurements();
+    animateEnergize();
+  }
+
+  function renderMeasurements(){
+    measureGrid.innerHTML='';
+    state.bulbs.slice().sort((a,b)=>a.label.localeCompare(b.label)).forEach(b=>{
+      const d=document.createElement('div');
+      d.className='measure';
+      const i=state.currents[b.id];
+      const status=b.removed?'retirado':b.bypassed?'puenteado':categoryLabel(state.correct[b.id]).toLowerCase();
+      d.innerHTML=`<strong>Foco ${b.label}</strong><br>I = ${i.toFixed(3)} A · ${status}`;
+      measureGrid.appendChild(d);
+    });
+  }
+
+  function animateEnergize(){
+    const start=performance.now();
+    const duration=650;
+    const step=(now)=>{
+      animation=Math.min(1,(now-start)/duration);
+      // suavizado cúbico
+      animation=1-Math.pow(1-animation,3);
+      draw();
+      if(animation<0.999) animFrame=requestAnimationFrame(step);
+    };
+    animFrame=requestAnimationFrame(step);
+  }
+
+  function resizeCanvasForDisplay(){
+    const rect=canvas.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=Math.max(600,Math.round(rect.width*dpr));
+    const h=Math.max(420,Math.round(rect.height*dpr));
+    if(canvas.width!==w || canvas.height!==h){ canvas.width=w; canvas.height=h; }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w:rect.width,h:rect.height};
+  }
+
+  function mapPoint(p,w,h){
+    return [p[0]/900*w,p[1]/560*h];
+  }
+
+  function edgeGeometry(edge,w,h){
+    const A=mapPoint(state.nodes[edge.a],w,h);
+    const B=mapPoint(state.nodes[edge.b],w,h);
+    const dx=B[0]-A[0], dy=B[1]-A[1], len=Math.hypot(dx,dy)||1;
+    const nx=-dy/len, ny=dx/len;
+    const curve=edge.curve*(h/560);
+    const C=[(A[0]+B[0])/2+nx*curve,(A[1]+B[1])/2+ny*curve];
+    const bulb=[.25*A[0]+.5*C[0]+.25*B[0],.25*A[1]+.5*C[1]+.25*B[1]];
+    return {A,B,C,bulb};
+  }
+
+  function drawWireBezier(g){
+    ctx.beginPath(); ctx.moveTo(g.A[0],g.A[1]); ctx.quadraticCurveTo(g.C[0],g.C[1],g.B[0],g.B[1]); ctx.stroke();
+  }
+
+  function drawBulb(x,y,label,intensity,removed,bypassed){
+    const r=20;
+    if(state.evaluated && !removed && intensity>0){
+      const glow=8+30*intensity*animation;
+      const grd=ctx.createRadialGradient(x,y,3,x,y,glow);
+      grd.addColorStop(0,`rgba(255,235,155,${0.65*intensity*animation})`);
+      grd.addColorStop(1,'rgba(255,220,110,0)');
+      ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(x,y,glow,0,Math.PI*2); ctx.fill();
+    }
+
+    // Base
+    ctx.fillStyle='#8ea0b3'; ctx.strokeStyle='#d0dbe7'; ctx.lineWidth=1.4;
+    ctx.fillRect(x-13,y+13,26,8); ctx.strokeRect(x-13,y+13,26,8);
+
+    // Ampolleta
+    const lit=state.evaluated && !removed ? intensity*animation : 0;
+    ctx.beginPath(); ctx.arc(x,y-2,r,0,Math.PI*2);
+    ctx.fillStyle=lit>0 ? `rgba(255,221,115,${0.34+0.55*lit})` : '#2b3949';
+    ctx.fill(); ctx.strokeStyle=lit>0?'#ffe7a3':'#8799ac'; ctx.lineWidth=2; ctx.stroke();
+
+    // Filamento
+    ctx.beginPath(); ctx.moveTo(x-7,y+3); ctx.lineTo(x-2,y-4); ctx.lineTo(x+3,y+3); ctx.lineTo(x+8,y-4);
+    ctx.strokeStyle=lit>0?'#fff2bf':'#66788b'; ctx.lineWidth=2; ctx.stroke();
+
+    if(removed){
+      ctx.strokeStyle='#ff7c7c'; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(x-16,y-18); ctx.lineTo(x+16,y+18); ctx.moveTo(x+16,y-18); ctx.lineTo(x-16,y+18); ctx.stroke();
+    }
+
+    if(bypassed){
+      ctx.strokeStyle='#76c7ff'; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(x,y-2,30,Math.PI*.1,Math.PI*1.9); ctx.stroke();
+    }
+
+    ctx.font='900 16px system-ui'; ctx.fillStyle='#f4f8ff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label,x,y-34);
+  }
+
+  function drawBattery(w,h){
+    const P=mapPoint(state.nodes.P,w,h), N=mapPoint(state.nodes.N,w,h);
+    const by=h-58, cx=w/2;
+    ctx.strokeStyle='#68819a'; ctx.lineWidth=4; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(P[0],P[1]); ctx.lineTo(P[0],by); ctx.lineTo(cx-34,by); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+34,by); ctx.lineTo(N[0],by); ctx.lineTo(N[0],N[1]); ctx.stroke();
+
+    ctx.strokeStyle='#e9f0f8'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(cx-24,by-20); ctx.lineTo(cx-24,by+20); ctx.stroke();
+    ctx.lineWidth=7;
+    ctx.beginPath(); ctx.moveTo(cx+18,by-11); ctx.lineTo(cx+18,by+11); ctx.stroke();
+    ctx.font='700 13px system-ui'; ctx.fillStyle='#b8c7d8'; ctx.textAlign='center';
+    ctx.fillText('+',cx-24,by-31); ctx.fillText('−',cx+18,by-31);
+    ctx.fillText('6 V',cx,by+42);
+  }
+
+  function draw(){
+    if(!state) return;
+    const {w,h}=resizeCanvasForDisplay();
+    ctx.clearRect(0,0,w,h);
+
+    // Fondo cuadriculado muy tenue.
+    ctx.strokeStyle='rgba(130,160,195,.055)'; ctx.lineWidth=1;
+    const step=34;
+    for(let x=0;x<w;x+=step){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+    for(let y=0;y<h;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+
+    drawBattery(w,h);
+
+    ctx.strokeStyle='#70869e'; ctx.lineWidth=4; ctx.lineCap='round'; ctx.lineJoin='round';
+    state.bulbs.forEach(edge=>{
+      const g=edgeGeometry(edge,w,h);
+      drawWireBezier(g);
+      if(edge.bypassed){
+        ctx.strokeStyle='#76c7ff'; ctx.lineWidth=3;
+        drawWireBezier(g);
+        ctx.strokeStyle='#70869e'; ctx.lineWidth=4;
+      }
+    });
+
+    // Nodos visibles sólo como uniones discretas.
+    Object.entries(state.nodes).forEach(([name,p])=>{
+      if(name==='P'||name==='N') return;
+      const [x,y]=mapPoint(p,w,h);
+      ctx.fillStyle='#a9bdd0'; ctx.beginPath(); ctx.arc(x,y,4.2,0,Math.PI*2); ctx.fill();
+    });
+
+    state.bulbs.forEach(edge=>{
+      const g=edgeGeometry(edge,w,h);
+      const intensity=state.currents[edge.id]/state.maxCurrent;
+      drawBulb(g.bulb[0],g.bulb[1],edge.label,intensity,edge.removed,edge.bypassed);
+    });
+  }
+
+  energizeBtn.addEventListener('click',evaluate);
+  document.getElementById('newRoundTop').addEventListener('click',newRound);
+  document.getElementById('nextRound').addEventListener('click',newRound);
+  difficultyEl.addEventListener('change',newRound);
+  showMeasuresBtn.addEventListener('click',()=>{
+    state.showMeasures=!state.showMeasures;
+    measurements.classList.toggle('show',state.showMeasures);
+    showMeasuresBtn.textContent=state.showMeasures?'Ocultar mediciones':'Mostrar mediciones';
+  });
+  window.addEventListener('resize',draw);
+
+  newRound();
+})();
+</script>
+</body>
+</html>
